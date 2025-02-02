@@ -1,0 +1,45 @@
+/** @type {import('@remix-run/dev').AppConfig} */
+export default {
+  ignoredRouteFiles: ["**/.*"],
+  serverModuleFormat: "esm",
+  serverPlatform: "node",
+  tailwind: false,
+  postcss: false,
+  watchPaths: ["./app/**/*"],
+  serverDependenciesToBundle: [
+    /^@ai-sdk\/.*/,
+    /^@iconify-json\/.*/,
+    /^@uiw\/.*/,
+    /^@xterm\/.*/,
+    "ai",
+    "chalk",
+    "date-fns",
+    "diff",
+    "file-saver",
+    "framer-motion",
+    "ignore",
+    "isomorphic-git",
+    "istextorbinary",
+    "jose",
+    "js-cookie",
+    "jszip",
+    "nanostores",
+    "ollama-ai-provider",
+    "react-hotkeys-hook",
+    "react-markdown",
+    "react-resizable-panels",
+    "react-toastify",
+    "rehype-raw",
+    "rehype-sanitize",
+    "remark-gfm",
+    "remix-island",
+    "shiki",
+    "unist-util-visit"
+  ],
+  future: {
+    v3_fetcherPersist: true,
+    v3_relativeSplatPath: true,
+    v3_throwAbortReason: true,
+    v3_lazyRouteDiscovery: true
+  }
+}; 
