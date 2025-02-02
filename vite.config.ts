@@ -18,9 +18,6 @@ const getGitHash = () => {
   }
 };
 
-
-
-
 export default defineConfig((config) => {
   return {
     define: {
@@ -29,7 +26,17 @@ export default defineConfig((config) => {
       // 'process.env': JSON.stringify(process.env)
     },
     build: {
-      target: 'esnext',
+      target: process.env.VITE_MOBILE_SUPPORT ? 'es2015' : 'esnext',
+      minify: true,
+      cssMinify: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+          }
+        }
+      }
     },
     plugins: [
       nodePolyfills({

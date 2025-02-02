@@ -9,7 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     name: Deploy to Cloudflare Pages
-    environment: production
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,10 +42,18 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm run build
+        run: VITE_MOBILE_SUPPORT=true pnpm run build -- --mode production --minify --target es2015
         env:
           VITE_APP_VERSION: ${{ github.sha }}
           NODE_ENV: production
+          VITE_LOG_LEVEL: error
+          VITE_BUILD_TARGET: production
+          VITE_LEGACY_BUILD: true
+          VITE_MOBILE_OPTIMIZATION: true
+          OPENAI_LIKE_API_BASE_URL: ${{ secrets.OPENAI_LIKE_API_BASE_URL }}
+          OLLAMA_API_BASE_URL: ${{ secrets.OLLAMA_API_BASE_URL }}
+          LMSTUDIO_API_BASE_URL: ${{ secrets.LMSTUDIO_API_BASE_URL }}
+          TOGETHER_API_BASE_URL: ${{ secrets.TOGETHER_API_BASE_URL }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
