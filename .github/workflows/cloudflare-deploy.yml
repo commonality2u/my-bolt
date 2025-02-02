@@ -42,7 +42,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: VITE_MOBILE_SUPPORT=true pnpm run build -- --mode production --minify --target es2015
+        run: VITE_MOBILE_SUPPORT=true pnpm run build
         env:
           VITE_APP_VERSION: ${{ github.sha }}
           NODE_ENV: production
