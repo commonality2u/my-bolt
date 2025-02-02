@@ -5,7 +5,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import * as dotenv from 'dotenv';
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 
 dotenv.config();
 
@@ -19,11 +19,35 @@ const getGitHash = () => {
 };
 
 export default defineConfig((config) => {
+  const plugins = [
+    nodePolyfills({
+      include: ['path', 'buffer', 'process'],
+    }),
+    remixVitePlugin({
+      future: {
+        v3_fetcherPersist: true,
+        v3_relativeSplatPath: true,
+        v3_throwAbortReason: true,
+        v3_lazyRouteDiscovery: true
+      },
+    }),
+    UnoCSS(),
+    tsconfigPaths(),
+    chrome129IssuePlugin(),
+  ];
+
+  if (config.mode !== 'test') {
+    plugins.unshift(remixCloudflareDevProxy());
+  }
+
+  if (config.mode === 'production') {
+    plugins.push(optimizeCssModules({ apply: 'build' }));
+  }
+
   return {
     define: {
       __COMMIT_HASH: JSON.stringify(getGitHash()),
       __APP_VERSION: JSON.stringify(process.env.npm_package_version),
-      // 'process.env': JSON.stringify(process.env)
     },
     build: {
       target: process.env.VITE_MOBILE_SUPPORT ? 'es2015' : 'esnext',
@@ -38,24 +62,7 @@ export default defineConfig((config) => {
         }
       }
     },
-    plugins: [
-      nodePolyfills({
-        include: ['path', 'buffer', 'process'],
-      }),
-      config.mode !== 'test' && remixCloudflareDevProxy(),
-      remixVitePlugin({
-        future: {
-          v3_fetcherPersist: true,
-          v3_relativeSplatPath: true,
-          v3_throwAbortReason: true,
-          v3_lazyRouteDiscovery: true
-        },
-      }),
-      UnoCSS(),
-      tsconfigPaths(),
-      chrome129IssuePlugin(),
-      config.mode === 'production' && optimizeCssModules({ apply: 'build' }),
-    ],
+    plugins,
     envPrefix: ["VITE_","OPENAI_LIKE_API_BASE_URL", "OLLAMA_API_BASE_URL", "LMSTUDIO_API_BASE_URL","TOGETHER_API_BASE_URL"],
     css: {
       preprocessorOptions: {
@@ -75,7 +82,7 @@ function chrome129IssuePlugin() {
         const raw = req.headers['user-agent']?.match(/Chrom(e|ium)\/([0-9]+)\./);
 
         if (raw) {
-          const version = parseInt(raw[2], 10);
+          const version = Number.parseInt(raw[2], 10);
 
           if (version === 129) {
             res.setHeader('content-type', 'text/html');
