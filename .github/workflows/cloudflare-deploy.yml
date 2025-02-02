@@ -42,7 +42,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: VITE_MOBILE_SUPPORT=true pnpm run build
+        run: pnpm run build
         env:
           VITE_APP_VERSION: ${{ github.sha }}
           NODE_ENV: production
@@ -50,6 +50,7 @@ jobs:
           VITE_BUILD_TARGET: production
           VITE_LEGACY_BUILD: true
           VITE_MOBILE_OPTIMIZATION: true
+          VITE_MOBILE_SUPPORT: true
           OPENAI_LIKE_API_BASE_URL: ${{ secrets.OPENAI_LIKE_API_BASE_URL }}
           OLLAMA_API_BASE_URL: ${{ secrets.OLLAMA_API_BASE_URL }}
           LMSTUDIO_API_BASE_URL: ${{ secrets.LMSTUDIO_API_BASE_URL }}
