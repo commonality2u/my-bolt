@@ -1,0 +1,70 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm run build
+        env:
+          NODE_ENV: production
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_LOG_LEVEL: error
+          VITE_BUILD_TARGET: production
+          VITE_MOBILE_SUPPORT: true
+          VITE_MOBILE_OPTIMIZATION: true
+          VITE_LEGACY_BUILD: true
+          # API Environment Variables
+          OPENAI_LIKE_API_BASE_URL: ${{ secrets.OPENAI_LIKE_API_BASE_URL }}
+          OLLAMA_API_BASE_URL: ${{ secrets.OLLAMA_API_BASE_URL }}
+          LMSTUDIO_API_BASE_URL: ${{ secrets.LMSTUDIO_API_BASE_URL }}
+          TOGETHER_API_BASE_URL: ${{ secrets.TOGETHER_API_BASE_URL }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: bolt-diy
+          directory: ./build/client
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
